@@ -20,6 +20,10 @@ function Reveal({ as: Tag = 'div', className = '', delay = 0, children, ...rest 
   return <Tag ref={ref} className={`reveal${inView ? ' in' : ''} ${className}`} style={{ transitionDelay: `${delay}s` }} {...rest}>{children}</Tag>;
 }
 
+const TOKEN = <span className="keep">$BLESSED</span>;
+/** Keeps the $BLESSED ticker uppercase inside lowercase copy. */
+const withToken = (t: string) => t.split('$BLESSED').flatMap((part, i) => (i ? [<span key={i} className="keep">$BLESSED</span>, part] : [part]));
+
 const STOCKS = ['NVDA', 'TSLA', 'AAPL', 'SPY', 'QQQ', 'MSTR', 'COIN', 'HOOD', 'META', 'HYPE'];
 const USES: [string, string, string, number][] = [
   ['buyback & burn', 'buys back and burns $BLESSED.', '#FFB547', 30],
@@ -104,8 +108,8 @@ export function HomeSections({ onLaunch }: { onLaunch: () => void }) {
         </div>
         <div className="tithe">
           <span className="tithe-mark"><Mark size={40} /></span>
-          <div><p className="eyebrow">$BLESSED</p><p className="tithe-line">every pair tithes. its fees buy $BLESSED back and burn it.{s ? <span className="keep" style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--faint)', fontWeight: 400, letterSpacing: 0, marginTop: 6 }}>{num(s.blessedBurned)} burned so far</span> : null}</p></div>
-          <Link className="btn-amber" href="/swap">buy $BLESSED</Link>
+          <div><p className="eyebrow">{TOKEN}</p><p className="tithe-line">every pair tithes. its fees buy {TOKEN} back and burn it.{s ? <span className="keep" style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--faint)', fontWeight: 400, letterSpacing: 0, marginTop: 6 }}>{num(s.blessedBurned)} burned so far</span> : null}</p></div>
+          <Link className="btn-amber" href="/swap">buy {TOKEN}</Link>
         </div>
       </Reveal>
 
@@ -144,7 +148,7 @@ export function HomeSections({ onLaunch }: { onLaunch: () => void }) {
       <section className="sec" id="creators">
         <Reveal className="sec-head"><p className="eyebrow">built for creators</p><h2>the faithful <span className="grad">get paid.</span></h2></Reveal>
         <Reveal className="numgrid">
-          <div><b>80%</b><h4>of every fee, to you</h4><p>33% of the creator share buys back and burns $BLESSED.</p></div>
+          <div><b>80%</b><h4>of every fee, to you</h4><p>33% of the creator share buys back and burns {TOKEN}.</p></div>
           <div><b>0.25–5%</b><h4>trading fee</h4><p>your call, chosen once at launch. it never changes.</p></div>
           <div><b>≤ 90%</b><h4>anti-snipe fee</h4><p>at launch and again at listing, falling within 10 minutes.</p></div>
           <div><b>0.01</b><h4>hype to launch</h4><p>no listing fee. ever.</p></div>
@@ -156,7 +160,7 @@ export function HomeSections({ onLaunch }: { onLaunch: () => void }) {
           <Reveal className="ring"><Ring /><div className="ring-mid"><b>4h</b><small>timelock</small></div></Reveal>
           <div>
             <Reveal className="sec-head" style={{ marginBottom: 22 }}><p className="eyebrow">the collection plate</p><h2>where the <span className="grad">tithe</span> goes.</h2><p>the protocol&apos;s share of trading fees goes to the treasury, sits behind a four-hour public timelock, then goes back into the markets.</p></Reveal>
-            <Reveal as="ul" className="uses">{USES.map(([t, d, c]) => <li key={t}><i style={{ background: c }} /><div><b>{t}</b><p>{d}</p></div></li>)}</Reveal>
+            <Reveal as="ul" className="uses">{USES.map(([t, d, c]) => <li key={t}><i style={{ background: c }} /><div><b>{t}</b><p>{withToken(d)}</p></div></li>)}</Reveal>
           </div>
         </div>
       </section>
