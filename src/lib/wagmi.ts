@@ -1,27 +1,15 @@
-import { createConfig, http, cookieStorage, createStorage } from 'wagmi';
-import { injected, walletConnect, coinbaseWallet } from 'wagmi/connectors';
+import { createConfig, http, cookieStorage, createStorage, injected } from 'wagmi';
 import { hyperEvm, elysium } from './chains';
 
-const wcProjectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID;
-
+// Only the injected connector, imported from 'wagmi' itself. Importing from 'wagmi/connectors' pulls in every
+// connector SDK (Base Account → Coinbase CDP → optional x402 packages), and that breaks the Next build.
+// EIP-6963 discovery is on by default, so MetaMask, Rabby, Phantom, OKX and other browser wallets each show
+// up by name.
+// TODO(backend): to add WalletConnect, `npm i @wagmi/connectors @walletconnect/ethereum-provider` and import
+// walletConnect from '@wagmi/connectors/walletConnect' (a deep import, not the barrel).
 export const wagmiConfig = createConfig({
   chains: [hyperEvm, elysium],
-  connectors: [
-    injected({ shimDisconnect: true }),
-    ...(wcProjectId
-      ? [walletConnect({
-          projectId: wcProjectId,
-          showQrModal: true,
-          metadata: {
-            name: 'Blessed',
-            description: 'Every meme, blessed by a stock.',
-            url: 'https://blessed.fun',
-            icons: ['https://blessed.fun/icon.svg'],
-          },
-        })]
-      : []),
-    coinbaseWallet({ appName: 'Blessed' }),
-  ],
+  connectors: [injected({ shimDisconnect: true })],
   ssr: true,
   storage: createStorage({ storage: cookieStorage }),
   transports: {

@@ -21,7 +21,7 @@ export function ConnectModal() {
                 onSuccess: () => { closeConnect(); say('Wallet connected'); },
                 onError: (err) => say(err.message.split('\n')[0]),
               })}>
-              {c.name === 'Injected' ? 'Browser wallet' : c.name}
+              {c.name === 'Injected' ? 'browser wallet' : c.name}
               <span className="m faint">{isPending && variables && 'connector' in variables && (variables.connector as { uid?: string }).uid === c.uid ? 'opening…' : '→'}</span>
             </button>
           ))}

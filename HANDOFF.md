@@ -7,7 +7,7 @@ Every screen is built and wired to a data layer and to contract hooks. Nothing r
 | var | what |
 |---|---|
 | `NEXT_PUBLIC_API_URL` | indexer / REST API base. Unset means mock data. |
-| `NEXT_PUBLIC_WC_PROJECT_ID` | WalletConnect (Reown) project id. Unset means the WalletConnect option is hidden. |
+| `NEXT_PUBLIC_WC_PROJECT_ID` | reserved for WalletConnect (not wired yet; see the note in `src/lib/wagmi.ts`) |
 | `NEXT_PUBLIC_HYPEREVM_RPC` | HyperEVM RPC (chain 999) |
 | `NEXT_PUBLIC_ELYSIUM_CHAIN_ID` / `_RPC` / `_EXPLORER` | **fill in**: the Elysium chain is a placeholder in `src/lib/chains.ts` |
 | `NEXT_PUBLIC_LAUNCHPAD_ADDRESS` | createToken, buy, sell, quoteBuy, quoteSell |
