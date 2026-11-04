@@ -88,7 +88,6 @@ export default function Home() {
       <div className="vignette" aria-hidden />
       <div className="center">
         <div ref={slotRef} className="hands-slot" aria-hidden />
-        <p ref={greetRef} className="greet"><span className="greet-dot" />{hello}, anon · now live on elysium</p>
         <Headline paused={paused} />
         <form ref={cardRef} className="card" onSubmit={(e) => { e.preventDefault(); go(); }}>
           <label htmlFor="launch-field" className="sr-only">Name your meme</label>
