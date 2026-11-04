@@ -152,10 +152,9 @@ export function HomeSections({ onLaunch, onBlessed }: { onLaunch: () => void; on
 
       <section className="sec" id="lore">
         <Reveal className="lore">
-          <span className="lore-greek" aria-hidden>μακάρων νῆσοι</span>
           <p className="eyebrow">the lore</p>
           <h2>elysium is the <span className="grad">isle of the blessed.</span></h2>
-          <p className="lore-body">in greek myth, elysium (the elysian fields, also called the isles of the blessed, <i>makárōn nêsoi</i>) was the paradise at the western edge of the world. heroes favored by the gods went there to live forever, free of toil. on blessed, every meme gets the same chance: it&apos;s born in the mortal world, earns its ascent on the curve, and crosses to elysium, where its liquidity is locked forever.</p>
+          <p className="lore-body">in greek myth, elysium (the elysian fields, also called the isles of the blessed) was the paradise at the western edge of the world. heroes favored by the gods went there to live forever, free of toil. on blessed, every meme gets the same chance: it&apos;s born in the mortal world, earns its ascent on the curve, and crosses to elysium, where its liquidity is locked forever.</p>
           <div className="path">
             <div className="stop"><small>the mortal world</small><b>hyperevm</b><p>every meme is born here, priced in a stock, on the bonding curve.</p></div>
             <span className="arrow" aria-hidden>→</span>

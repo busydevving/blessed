@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: 'docs' };
 
 const SECTIONS = [
   { id: 'lore', title: 'the lore', body: [
-    'in greek myth, elysium (the elysian fields) is also called the isles of the blessed, makárōn nêsoi: the paradise at the western edge of the world where heroes favored by the gods live forever, free of toil.',
+    'in greek myth, elysium (the elysian fields) is also called the isles of the blessed: the paradise at the western edge of the world where heroes favored by the gods live forever, free of toil.',
     "that's the name. blessed is how a meme gets to elysium. it's born in the mortal world (hyperevm), earns its ascent on the bonding curve, and when the curve completes it crosses to elysium, where its liquidity is locked forever.",
     'every token carries the mark from birth: an address that starts 0xb1e55ed.',
   ] },
