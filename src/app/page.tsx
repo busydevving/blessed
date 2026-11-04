@@ -1,7 +1,8 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
-import { Congregation, type CongregationHandle } from '@/components/Congregation';
+import { Altar, type AltarHandle } from '@/components/Altar';
+import { HomeSections } from '@/components/HomeSections';
 import { Headline } from '@/components/Headline';
 import { Icon } from '@/components/icons';
 import { useApp } from '@/components/AppContext';
@@ -10,7 +11,7 @@ import { FEE_MAX_BPS, FEE_MIN_BPS } from '@/lib/constants';
 import { parseMeme } from '@/lib/format';
 
 const CHIPS: { label: string; fill?: string; href?: string }[] = [
-  { label: '/launch on NVDA', fill: 'Amen $AMEN' },
+  { label: '/launch on NVDA', fill: 'amen $AMEN' },
   { label: '/trending pairs', href: '/pairs' },
   { label: '/claim earnings', href: '/earnings' },
   { label: '/bridge to Elysium', href: '/bridge' },
@@ -25,8 +26,9 @@ function greeting() {
 export default function Home() {
   const router = useRouter();
   const { paused } = useApp();
-  const sea = useRef<CongregationHandle>(null);
-  const mainRef = useRef<HTMLDivElement>(null);
+  const sea = useRef<AltarHandle>(null);
+  const slotRef = useRef<HTMLDivElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
   const greetRef = useRef<HTMLParagraphElement>(null);
   const cardRef = useRef<HTMLFormElement>(null);
   const chipsRef = useRef<HTMLDivElement>(null);
@@ -42,18 +44,16 @@ export default function Home() {
 
   useEffect(() => setHello(greeting()), []);
 
-  // Tell the congregation where the centre block sits (greeting → chips) so it circles it, never crosses it.
+  // Tell the altar where the hands' slot sits (the space above the greeting).
   useEffect(() => {
-    const main = mainRef.current!;
+    const hero = mainRef.current!, slot = slotRef.current!;
     const measure = () => {
-      const m = main.getBoundingClientRect();
-      if (!m.width || !m.height) return;
-      const g = greetRef.current!.getBoundingClientRect(), c = cardRef.current!.getBoundingClientRect(), k = chipsRef.current!.getBoundingClientRect();
-      const left = Math.min(c.left, k.left), right = Math.max(c.right, k.right);
-      sea.current?.setFocus(((left + right) / 2 - m.left) / m.width, ((g.top + k.bottom) / 2 - m.top) / m.height, (right - left) / 2 / m.width, (k.bottom - g.top) / 2 / m.height);
+      const h = hero.getBoundingClientRect(), r = slot.getBoundingClientRect();
+      if (!h.width || !h.height) return;
+      sea.current?.setSlot((r.left + r.width / 2 - h.left) / h.width, (r.top + r.height / 2 - h.top) / h.height, r.height / h.height);
     };
     const ro = new ResizeObserver(measure);
-    [main, greetRef.current!, cardRef.current!, chipsRef.current!].forEach((el) => ro.observe(el));
+    ro.observe(hero); ro.observe(slot);
     measure();
     return () => ro.disconnect();
   }, []);
@@ -82,17 +82,19 @@ export default function Home() {
   };
 
   return (
-    <div ref={mainRef} style={{ position: 'absolute', inset: 0 }} onPointerMove={onMove} onPointerLeave={() => sea.current?.clearPointer()}>
-      <Congregation ref={sea} paused={paused} />
+    <div className="home-scroll" id="scroller">
+    <section ref={mainRef} className="hero" onPointerMove={onMove} onPointerLeave={() => sea.current?.clearPointer()}>
+      <Altar ref={sea} paused={paused} />
       <div className="vignette" aria-hidden />
       <div className="center">
-        <p ref={greetRef} className="greet"><span className="greet-dot" />{hello}, anon{stats ? ` · ${stats.pairs} pairs blessed` : ''}</p>
+        <div ref={slotRef} className="hands-slot" aria-hidden />
+        <p ref={greetRef} className="greet"><span className="greet-dot" />{hello}, anon · now live on elysium</p>
         <Headline paused={paused} />
         <form ref={cardRef} className="card" onSubmit={(e) => { e.preventDefault(); go(); }}>
           <label htmlFor="launch-field" className="sr-only">Name your meme</label>
           <textarea id="launch-field" ref={fieldRef} className="field" rows={2} value={text} onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go(); } else if (e.key.length === 1 || e.key === 'Backspace') sea.current?.nudge(); }}
-            placeholder="Name your meme and its ticker… e.g. Amen $AMEN" />
+            placeholder="name your meme and its ticker… e.g. amen $AMEN" />
           <div className="bar">
             <button type="button" className="tool" aria-label="Add an image on the launch page" title="Add an image" onClick={go}><Icon name="plus" /></button>
             <div style={{ position: 'relative' }} data-pop>
@@ -133,8 +135,9 @@ export default function Home() {
           ))}
         </div>
       </div>
-      <p className="foot">0.01 HYPE to launch · liquidity locked forever · every address starts <span style={{ color: 'var(--amber-2)' }}>0xb1e55ed</span><br />
-        <span style={{ opacity: 0.7 }}>🙏 hands drawn from <a href="https://github.com/jdecked/twemoji" target="_blank" rel="noreferrer">Twemoji</a>, CC-BY 4.0</span></p>
+      <a className="cue" href="#how" aria-label="scroll to how it works"><span>how it works</span><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="m6 8 4 4 4-4" /></svg></a>
+    </section>
+    <HomeSections onLaunch={() => { document.getElementById('scroller')?.scrollTo({ top: 0, behavior: 'smooth' }); window.setTimeout(() => fieldRef.current?.focus({ preventScroll: true }), 500); }} />
     </div>
   );
 }

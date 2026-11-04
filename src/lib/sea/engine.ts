@@ -1,7 +1,7 @@
 /* eslint-disable */
 // @ts-nocheck: ported 1:1 from the standalone preview; untyped params are intentional.
-// The congregation: praying hands, coins, votive candles and halos circling the launch card, drawn as
-// glyph cells. Ported from the standalone preview; loosely typed on purpose (see the class index signature).
+// Glyph-cell engine. `Altar` (home hero): one pair of 🙏 hands that drift in, fold together, flash, and take a
+// halo. `Congregation` (app pages): coins, candles, halos and hands circling slowly in the background.
 
 /* ═══════════════════════════ the congregation (glyph-cell sea) ═══════════════════════════
  * Every offering (praying hands, coins, votive candles, halos) is painted as ordinary vector shapes into a
@@ -20,9 +20,9 @@ const EDGE = ["'", ',', '.', '`', '·'];
 const PUFF = ['·', '.', '+', '*'];
 const ASH = ['·', "'", '.', '·', ','];
 const ACCENTS = ['#FFB547', '#8B7CFF', '#FF5C7A', '#5BE3A6'];
-const clamp = (v: number, a: number, b: number) => v < a ? a : v > b ? b : v;
-const hash = (x: number, y: number, z: number) => { let h = Math.imul(x, 374761393) + Math.imul(y, 668265263) + Math.imul(z, 2147483647); h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
-function mulberry32(a: number){ return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const hash = (x, y, z) => { let h = Math.imul(x, 374761393) + Math.imul(y, 668265263) + Math.imul(z, 2147483647); h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+function mulberry32(a){ return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
 /* 🙏 geometry from Twemoji (CC-BY 4.0), in its 36-unit box, recoloured. Left and right hands separate so they can part. */
 let GEO: any = null;
@@ -41,7 +41,7 @@ function geo(){
 }
 
 /* Palettes per kind: the glyph cells take their colour from what's painted underneath. */
-const PAL: any = {
+const PAL = {
   hands: { sleeve: '#5A4BD1', cuff: '#2E2580', back: '#C79A52', palm: '#F0D49A', seam: '#B88A45' },
   coin:  { face: '#FFB547', rim: '#A8661A', shine: '#FFE2A8', mark: '#7A4710' },
   candle:{ wax: '#E9E2D2', wax2: '#BDB4A2', wick: '#2a2220', flame: '#FF8A3D', core: '#FFE08A', glow: '#FFB547' },
@@ -50,7 +50,7 @@ const PAL: any = {
 
 /* Who sits in the ring. Order = order round the ring (big and small alternate). Depth ≥ 0.6 goes to the
  * blurred back layer and the outer lanes. L is the offering's height in world units. */
-const CAST: any[] = [
+const CAST = [
   { kind: 'hands',  L: 0.20, depth: 0.10, lane: 0.30 },
   { kind: 'coin',   L: 0.07, depth: 0.20, lane: 0.10 },
   { kind: 'candle', L: 0.10, depth: 0.30, lane: 0.45 },
@@ -66,11 +66,11 @@ const CAST: any[] = [
   { kind: 'hands',  L: 0.13, depth: 0.14, lane: 0.15 },
 ];
 /* Half-width each kind occupies, in multiples of L (for slot spacing and the keep-out). */
-const WIDTH: Record<string, number> = { hands: 0.55, coin: 0.5, candle: 0.32, halo: 0.55 };
+const WIDTH = { hands: 0.55, coin: 0.5, candle: 0.32, halo: 0.55 };
 
 export class Congregation {
   [key: string]: any;
-  constructor(front: HTMLCanvasElement, back: HTMLCanvasElement){
+  constructor(front, back){
     this.front = front; this.fctx = front.getContext('2d');
     this.back = back; this.bctx = back.getContext('2d');
     this.acc = document.createElement('canvas'); this.actx = this.acc.getContext('2d', { willReadFrequently: true });
@@ -122,7 +122,7 @@ export class Congregation {
     if (w < 2 || h < 2) return;
     this.devW = Math.round(w * dpr); this.devH = Math.round(h * dpr);
     for (const c of [this.front, this.back]){ c.width = this.devW; c.height = this.devH; }
-    this.rows = clamp(Math.round(h / CELL), 24, 120); this.cols = Math.max(1, Math.round((w / h) * this.rows));
+    this.rows = clamp(Math.round(h / (this.cell || CELL)), 24, 160); this.cols = Math.max(1, Math.round((w / h) * this.rows));
     this.A = w / h; this.K = this.rows * SS; this.W = this.cols * SS;
     this.acc.width = this.scratch.width = this.W; this.acc.height = this.scratch.height = this.K;
     this.ex = new Float32Array(this.cols + 1); this.ey = new Float32Array(this.rows + 1);
@@ -200,10 +200,10 @@ export class Congregation {
       const { HAND_L, HAND_R, SEAM } = geo();
       // Hands fold, then now and then part a little and fold again (and part wide after a launch).
       const breathe = Math.pow(Math.max(0, Math.sin(t * 0.42 + it.seed)), 8);
-      const p = Math.max(breathe * 0.7, (it.part || 0) * 1.6);
+      const p = it.sep != null ? it.sep : Math.max(breathe * 0.7, (it.part || 0) * 1.6);
       const u = s / 36; ctx.scale(u, u); ctx.translate(-18, -18);
       for (const [H, sgn] of [[HAND_L, -1], [HAND_R, 1]]){
-        ctx.save(); ctx.translate(H.pivot[0], H.pivot[1]); ctx.rotate(sgn * p * 0.28); ctx.translate(-H.pivot[0] + sgn * p * 2.2, -H.pivot[1]);
+        ctx.save(); ctx.translate(H.pivot[0], H.pivot[1]); ctx.rotate(sgn * Math.min(p * 0.28, 0.42)); ctx.translate(-H.pivot[0] + sgn * p * 2.2, -H.pivot[1]);
         ctx.fillStyle = PAL.hands.sleeve; ctx.fill(H.sleeve);
         ctx.fillStyle = PAL.hands.cuff; ctx.beginPath(); ctx.ellipse(H.cuff[0], H.cuff[1], H.cuff[2], H.cuff[3], H.cuff[4] * Math.PI / 180, 0, TAU); ctx.fill();
         ctx.fillStyle = PAL.hands.back; ctx.fill(H.back);
@@ -234,7 +234,11 @@ export class Congregation {
       ctx.bezierCurveTo(s * 0.1, top - s * 0.12, s * 0.07, top - s * 0.02, 0, top - s * 0.02);
       ctx.bezierCurveTo(-s * 0.07, top - s * 0.02, -s * 0.1, top - s * 0.12, fx, top - s * 0.05 - fh); ctx.fill();
       ctx.fillStyle = PAL.candle.core; ctx.beginPath(); ctx.ellipse(0, top - s * 0.08, s * 0.03, s * 0.06 * fl, 0, 0, TAU); ctx.fill();
+    } else if (it.kind === 'flash'){
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, s / 2); g.addColorStop(0, `rgba(255,248,230,${it.alpha})`); g.addColorStop(1, 'rgba(255,214,140,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, s / 2, 0, TAU); ctx.fill();
     } else if (it.kind === 'halo'){
+      ctx.globalAlpha = it.alpha ?? 1;
       // A halo: a ring seen at an angle, tilting slowly.
       const rx = s / 2, ry = s * (0.16 + 0.06 * Math.sin(t * 0.7 + it.seed));
       ctx.lineWidth = s * 0.11; ctx.strokeStyle = PAL.halo.ring2; ctx.beginPath(); ctx.ellipse(0, s * 0.02, rx, ry, 0, 0, TAU); ctx.stroke();
@@ -317,6 +321,61 @@ export class Congregation {
         }
       }
     }
+  }
+}
+
+
+/* ═══════════════════════════ the altar (hero) ═══════════════════════════
+ * One pair of glyph-cell hands: they drift in from either side, fold together (a flash, a ring of light, the
+ * halo settles above the fingertips), hold, and part again. Typing keeps them folded; a launch makes them clap.
+ * Only a few deep, blurred coins and candles drift at the edges. Reuses the congregation's cell renderer.
+ */
+const easeIO = (x) => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const easeOutBack = (x) => 1 + 2.2 * Math.pow(x - 1, 3) + 1.2 * Math.pow(x - 1, 2);
+export class Altar extends Congregation {
+  constructor(front, back){
+    super(front, back);
+    this.cell = 9; this.cycle = 8; this.offset = 0; this.slot = { x: .5, y: .28, h: .3 }; this.folded = false; this.haloT = 9;
+    this.hands = { kind: 'hands', L: .3, depth: .04, x: 0, y: 0, R: .2, seed: -1.2, vx: 0, vy: 0, sep: 4.5 };
+    this.halo = { kind: 'halo', L: .15, depth: .04, x: 0, y: 0, R: .1, seed: 2, vx: 0, vy: 0, alpha: 0 };
+    this.flash = { kind: 'flash', L: .2, depth: .03, x: 0, y: 0, R: .1, seed: 0, vx: 0, vy: 0, alpha: 0 };
+    const r = this.rng;
+    this.extras = [['coin', .07, .8, .07, .24], ['candle', .11, .78, .92, .3], ['coin', .05, .7, .87, .8], ['candle', .08, .72, .1, .78], ['halo', .08, .75, .2, .55], ['coin', .045, .66, .78, .12]]
+      .map(([kind, L, depth, fx, fy]) => ({ kind, L, depth, fx, fy, x: 0, y: 0, R: L * .6, seed: r() * 100, vx: 0, vy: 0, spin: r() * TAU }));
+    this.items = [this.hands, this.halo, this.flash, ...this.extras];
+  }
+  setSlot(fx, fy, fh){ this.slot = { x: fx, y: fy, h: fh }; this.layout(); }
+  assignSlots(){ this.layout(); }
+  layout(){
+    const { hands, halo, flash, slot } = this, t = this.time;
+    // The slot holds the halo above and the hands below it, with clear air between them.
+    hands.L = slot.h * .74; hands.x = slot.x * this.A; hands.y = slot.y + slot.h * .13 + 0.005 * Math.sin(t * .8);
+    halo.L = hands.L * .36; halo.x = hands.x;
+    const drop = 1 - easeOutBack(Math.min(1, this.haloT / .8));
+    halo.y = hands.y - hands.L * .5 - halo.L * .42 - drop * .08 + 0.004 * Math.sin(t * 1.1);
+    flash.L = hands.L * .9; flash.x = hands.x; flash.y = hands.y - hands.L * .32;
+    for (const e of this.extras){ e.x = e.fx * this.A + Math.sin(t * .07 + e.seed) * .04; e.y = e.fy + Math.sin(t * .3 + e.seed) * .015; }
+  }
+  nudge(){ this.attnUntil = this.time + 2.4; }
+  /* A launch: the hands spring apart a little and clap back together. */
+  bless(){ this.attnUntil = -1; const c = ((this.time + this.offset) % this.cycle); this.offset += (0.95 - c); this.hands.sep = Math.max(this.hands.sep, 2.4); this.folded = false; }
+  step(dt){
+    this.time += dt; const t = this.time, { hands, halo, flash } = this;
+    const c = ((t + this.offset) % this.cycle + this.cycle) % this.cycle;
+    let target = c < 1.8 ? 4.5 * (1 - easeIO(c / 1.8)) : c < 6.2 ? 0 : 4.5 * easeIO((c - 6.2) / 1.8);
+    if (this.attentive) target = 0;
+    if (this.pointer){ const d = Math.hypot(this.pointer.x - hands.x, this.pointer.y - hands.y), r = hands.L * .7; if (d < r) target += (1 - d / r) * .9; }
+    hands.sep += (target - hands.sep) * Math.min(1, dt * 7);
+    if (!this.folded && hands.sep < .12){ this.folded = true; this.haloT = 0; flash.alpha = 1;
+      this.ripple(hands.x, hands.y - hands.L * .3, 1.1, 2.4, .3); this.ripple(hands.x, hands.y - hands.L * .3, .6, 2.4, .18); }
+    if (this.folded && hands.sep > .6) this.folded = false;
+    this.haloT += dt;
+    halo.alpha += ((this.folded ? 1 : 0) - halo.alpha) * Math.min(1, dt * (this.folded ? 5 : 3));
+    flash.alpha *= Math.exp(-dt * 6);
+    for (const e of this.extras) e.spin += dt * 1.2;
+    this.layout();
+    this.ripples = this.ripples.filter((r) => t - r.born < r.life);
+    for (const f of this.ash){ f.y -= f.vy * dt; f.x += Math.sin(t * .3 + f.seed) * .004 * dt; if (f.y < -.02){ f.y = 1.02; f.x = this.rng() * this.A; } }
   }
 }
 
