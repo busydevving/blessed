@@ -150,6 +150,22 @@ export function HomeSections({ onLaunch, onBlessed }: { onLaunch: () => void; on
         </div>
       </Reveal>
 
+      <section className="sec" id="lore">
+        <Reveal className="lore">
+          <span className="lore-greek" aria-hidden>μακάρων νῆσοι</span>
+          <p className="eyebrow">the lore</p>
+          <h2>elysium is the <span className="grad">isle of the blessed.</span></h2>
+          <p className="lore-body">in greek myth, elysium (the elysian fields, also called the isles of the blessed, <i>makárōn nêsoi</i>) was the paradise at the western edge of the world. heroes favored by the gods went there to live forever, free of toil. on blessed, every meme gets the same chance: it&apos;s born in the mortal world, earns its ascent on the curve, and crosses to elysium, where its liquidity is locked forever.</p>
+          <div className="path">
+            <div className="stop"><small>the mortal world</small><b>hyperevm</b><p>every meme is born here, priced in a stock, on the bonding curve.</p></div>
+            <span className="arrow" aria-hidden>→</span>
+            <div className="stop"><small>the ascent</small><b>the curve</b><p>the faithful buy in. at 79.31% sold, the raise becomes the offering.</p></div>
+            <span className="arrow" aria-hidden>→</span>
+            <div className="stop end"><small>the isle of the blessed</small><b>elysium</b><p>two pools, locked forever. nothing can take it out. the launchpad only adds.</p></div>
+          </div>
+        </Reveal>
+      </section>
+
       <section className="sec" id="how">
         <Reveal className="sec-head"><p className="eyebrow">how it works</p><h2>three steps to <span className="grad">grace.</span></h2><p>pick what your meme answers to, set your rules once, and let the curve carry it up.</p></Reveal>
         <div className="steps">
@@ -231,7 +247,7 @@ export function HomeSections({ onLaunch, onBlessed }: { onLaunch: () => void; on
 
       <footer className="site-foot">
         <div className="foot-grid">
-          <div><span className="foot-brand"><Mark size={22} />blessed<i>.</i></span><p>every meme, blessed by a stock.</p><p className="mono-s">{SITE.domain}</p></div>
+          <div><span className="foot-brand"><Mark size={22} />blessed<i>.</i></span><p>every meme, blessed by a stock.</p><p>the isle of the blessed is elysium.</p><p className="mono-s">{SITE.domain}</p></div>
           <div><h5>product</h5><Link href="/pairs">pairs</Link><Link href="/launch">launch</Link><Link href="/swap">swap</Link><Link href="/offerings">offerings</Link><Link href="/stats">stats</Link><Link href="/docs">docs</Link></div>
           <div><h5>legal</h5><Link href="/terms">terms</Link><Link href="/privacy">privacy</Link><Link href="/risks">risks</Link></div>
           <div><h5>community</h5><a href={SITE.x} target="_blank" rel="noreferrer">x · {SITE.xHandle}</a></div>

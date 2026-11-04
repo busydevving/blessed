@@ -4,6 +4,11 @@ import { Page, PageHead } from '@/components/ui';
 export const metadata: Metadata = { title: 'docs' };
 
 const SECTIONS = [
+  { id: 'lore', title: 'the lore', body: [
+    'in greek myth, elysium (the elysian fields) is also called the isles of the blessed, makárōn nêsoi: the paradise at the western edge of the world where heroes favored by the gods live forever, free of toil.',
+    "that's the name. blessed is how a meme gets to elysium. it's born in the mortal world (hyperevm), earns its ascent on the bonding curve, and when the curve completes it crosses to elysium, where its liquidity is locked forever.",
+    'every token carries the mark from birth: an address that starts 0xb1e55ed.',
+  ] },
   { id: 'pairs', title: 'pairs', body: [
     'a pair is a meme token priced in a quote asset: a stock (NVDA, TSLA, SPY…), a 3× share, or HYPE. when the quote moves, the meme moves with it.',
     'every token has a fixed supply of 1,000,000,000. 793,100,000 (79.31%) sells on a bonding curve on HyperEVM. nothing is minted later and there are no team tokens.',

@@ -6,6 +6,7 @@ export const HEADLINES: { lead: string; accent: string; tail?: string }[] = [
   { lead: 'price your meme in ', accent: 'NVDA' },
   { lead: 'what are we ', accent: 'blessing', tail: ' tonight?' },
   { lead: 'every address starts ', accent: '0xb1e55ed' },
+  { lead: 'ascend to the isle of the ', accent: 'blessed' },
   { lead: 'liquidity locked ', accent: 'forever' },
   { lead: 'launch for a ', accent: 'tithe', tail: ' of 0.01 HYPE' },
 ];
