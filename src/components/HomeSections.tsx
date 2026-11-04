@@ -1,8 +1,8 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { useStats } from '@/hooks/useData';
-import { num, usd } from '@/lib/format';
+import { usePairs, useStats } from '@/hooks/useData';
+import { num, pct, usd } from '@/lib/format';
 import { SITE } from '@/lib/constants';
 import { Mark } from './icons';
 import { useApp } from './AppContext';
@@ -85,8 +85,44 @@ function Address() {
   );
 }
 
+/** A live tape of freshly blessed pairs, each address showing its 0xb1e55ed prefix. */
+function Tape() {
+  const { data } = usePairs({ sort: 'new' });
+  const items = (data ?? []).slice(0, 16);
+  if (!items.length) return <div className="tape" style={{ height: 43 }} />;
+  const row = (pass: number) => items.map((p) => (
+    <Link key={`${pass}-${p.address}`} href={`/pairs/${p.address}`}>
+      <span><span className="pre">0xb1e55ed</span>{p.address.slice(9, 13)}…{p.address.slice(-4)}</span>
+      <span className="tk">${p.symbol}/{p.quote}</span>
+      <span className={p.change24h >= 0 ? 'up' : 'dn'}>{pct(p.change24h)}</span>
+    </Link>
+  ));
+  return <div className="tape" aria-label="freshly blessed"><div className="tape-in">{row(0)}{row(1)}</div></div>;
+}
+
+/** Paste any address: is it blessed? */
+function BlessingCheck({ onBlessed }: { onBlessed?: () => void }) {
+  const [v, setV] = useState('');
+  const [verdict, setVerdict] = useState<{ ok: boolean; text: string } | null>(null);
+  return (
+    <>
+      <form className="bless-check" onSubmit={(e) => {
+        e.preventDefault();
+        const a = v.trim().toLowerCase();
+        if (!/^0x[0-9a-f]{40}$/.test(a)) return setVerdict({ ok: false, text: 'that is not a valid address.' });
+        if (a.startsWith('0xb1e55ed')) { setVerdict({ ok: true, text: 'blessed 🙏 this token was born on blessed.' }); onBlessed?.(); }
+        else setVerdict({ ok: false, text: `not blessed. ${a.slice(0, 9)}… is not 0xb1e55ed…` });
+      }}>
+        <input value={v} onChange={(e) => setV(e.target.value)} placeholder="paste any token address to check its blessing" aria-label="token address" spellCheck={false} autoComplete="off" />
+        <button className="btn-amber" type="submit">check</button>
+      </form>
+      <p className={`verdict${verdict ? (verdict.ok ? ' yes' : ' no') : ''}`} aria-live="polite">{verdict?.text}</p>
+    </>
+  );
+}
+
 /** Everything below the hero on the home page. */
-export function HomeSections({ onLaunch }: { onLaunch: () => void }) {
+export function HomeSections({ onLaunch, onBlessed }: { onLaunch: () => void; onBlessed?: () => void }) {
   const { data: s } = useStats();
   const { paused } = useApp();
   const [chip, setChip] = useState(0);
@@ -98,6 +134,7 @@ export function HomeSections({ onLaunch }: { onLaunch: () => void }) {
 
   return (
     <>
+      <Tape />
       <Reveal as="section" className="sec" aria-label="numbers">
         <div className="statrow">
           <div className="stat"><b>{s ? s.pairs : 0}</b><small>pairs blessed</small></div>
@@ -132,6 +169,7 @@ export function HomeSections({ onLaunch }: { onLaunch: () => void }) {
           <Address />
           <div className="decode"><span><b>b1</b>bl</span><span><b>e55</b>ess</span><span><b>ed</b>ed</span></div>
           <p className="addr-note">every token is minted at an address that starts with <code>b1e55ed</code>, the same on hyperevm and on elysium. the launchpad checks it before anything trades. no prefix, no blessing.</p>
+          <BlessingCheck onBlessed={onBlessed} />
         </Reveal>
       </section>
 
@@ -198,6 +236,7 @@ export function HomeSections({ onLaunch }: { onLaunch: () => void }) {
           <div><h5>legal</h5><Link href="/terms">terms</Link><Link href="/privacy">privacy</Link><Link href="/risks">risks</Link></div>
           <div><h5>community</h5><a href={SITE.x} target="_blank" rel="noreferrer">x · {SITE.xHandle}</a></div>
         </div>
+        <div className="watermark" aria-hidden>0xb1e55ed</div>
         <div className="fine">
           <span>not offered in the united states, the united kingdom or canada. if you use it from there, you do so at your own risk.</span>
           <span>trading digital assets carries a high risk of losing all the capital you commit.</span>

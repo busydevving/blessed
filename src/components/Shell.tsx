@@ -12,6 +12,29 @@ import { ConnectModal } from './ConnectModal';
 import { TermsGate } from './TermsGate';
 
 type Mode = 'full' | 'rail' | 'phone';
+
+/** The wordmark scrambles into the blessed prefix on hover, and back. */
+function BrandName() {
+  const [txt, setTxt] = useState<string | null>(null);
+  const timer = useRef(0);
+  const scramble = (to: string, done?: () => void) => {
+    window.clearInterval(timer.current);
+    let n = 0;
+    timer.current = window.setInterval(() => {
+      n++;
+      const k = Math.floor((n / 9) * to.length);
+      setTxt(to.slice(0, k) + Array.from({ length: Math.max(0, to.length - k) }, () => '0123456789abcdef'[(Math.random() * 16) | 0]).join(''));
+      if (n >= 9) { window.clearInterval(timer.current); done?.(); }
+    }, 30);
+  };
+  useEffect(() => () => window.clearInterval(timer.current), []);
+  return (
+    <span className={`side-text brand-name${txt !== null ? ' hex' : ''}`}
+      onMouseEnter={() => scramble('0xb1e55ed')} onMouseLeave={() => scramble('blessed', () => setTxt(null))}>
+      {txt ?? <>blessed<i>.</i></>}
+    </span>
+  );
+}
 type Pop = 'search' | 'shortcuts' | null;
 
 /**
@@ -75,7 +98,7 @@ export function Shell({ children }: { children: ReactNode }) {
         <div className="side-head">
           <button type="button" className="brand" onClick={() => (mode === 'rail' && roomy ? toggleSidebar() : router.push('/'))} aria-label={mode === 'rail' && roomy ? 'Expand sidebar' : 'blessed home'}>
             <span className="brand-icon"><Mark className="brand-mark" /><Icon name="sidebar" className="brand-expand" /></span>
-            <span className="side-text brand-name">blessed<i>.</i></span>
+            <BrandName />
           </button>
           {roomy && (
             <button type="button" className="side-toggle side-text" onClick={toggleSidebar} aria-label="Collapse sidebar" title="Collapse sidebar (Ctrl B)">

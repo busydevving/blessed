@@ -18,7 +18,8 @@ const FULL = [':', ';', '+', '=', 'x', 'X', '%', '#', '8', '@'];
 const MID = [':', ';', '+', '*', '.'];
 const EDGE = ["'", ',', '.', '`', '·'];
 const PUFF = ['·', '.', '+', '*'];
-const ASH = ['·', "'", '.', '·', ','];
+// Embers rising through open water are the blessed prefix itself: b·1·e·5·5·e·d.
+const ASH = ['b', '1', 'e', '5', '5', 'e', 'd'];
 const ACCENTS = ['#FFB547', '#8B7CFF', '#FF5C7A', '#5BE3A6'];
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 const hash = (x, y, z) => { let h = Math.imul(x, 374761393) + Math.imul(y, 668265263) + Math.imul(z, 2147483647); h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };

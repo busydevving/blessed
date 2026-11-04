@@ -137,7 +137,7 @@ export default function Home() {
       </div>
       <a className="cue" href="#how" aria-label="scroll to how it works"><span>how it works</span><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="m6 8 4 4 4-4" /></svg></a>
     </section>
-    <HomeSections onLaunch={() => { document.getElementById('scroller')?.scrollTo({ top: 0, behavior: 'smooth' }); window.setTimeout(() => fieldRef.current?.focus({ preventScroll: true }), 500); }} />
+    <HomeSections onBlessed={() => sea.current?.bless()} onLaunch={() => { document.getElementById('scroller')?.scrollTo({ top: 0, behavior: 'smooth' }); window.setTimeout(() => fieldRef.current?.focus({ preventScroll: true }), 500); }} />
     </div>
   );
 }
